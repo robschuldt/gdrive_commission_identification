@@ -4,10 +4,11 @@ Identify the **artist** behind each piece of commission art and group the artwor
 into per-artist folders. Built for furry/anime commission collections (where the
 files are usually unhelpfully named `IMG_8578.PNG`, `Untitled_Artwork.png`, etc.).
 
-> **Status: v0.2 — identification engine + interactive review/labelling + dry-run report.**
-> The "paste a Google Drive link and it sorts your Drive" front end is Phase 2.
-> We're building the *hard* part first (identifying the artist) and proving it on
-> real images before wiring up Drive (the easy part).
+> **Status: v0.3 — identification engine + interactive review/labelling + dry-run
+> report + a Google Drive front end.** Paste a Drive folder link and it will
+> download, identify, and (optionally) reorganize the folder in Drive — or just
+> produce a sorted local copy. The hard part (identifying the artist) is proven on
+> real images first; Drive is wired on top of it.
 
 ## How it identifies an artist
 
@@ -44,26 +45,59 @@ pip install -r requirements.txt
 cp config.example.yaml config.yaml                  # then edit config.yaml
 ```
 
-## Use
+## Use — a Google Drive link (the easy path)
 
-Download your Drive folder (Drive → right-click the folder → Download) and unzip it,
-then point the tool at that local folder.
+Point it straight at a Drive folder. It downloads the images to `--work-dir`,
+identifies them, and writes the dry-run report. Nothing in Drive changes unless you
+ask. (First run opens a browser for Google sign-in — see **Drive setup** below.)
 
 ```bash
-# 1) DRY RUN — writes a report, moves nothing
-python -m commission_id.cli "/path/to/Jaiy Deer" --config config.yaml
+# 1) DRY RUN — download + identify + report, touches nothing in Drive
+python -m commission_id.cli "https://drive.google.com/drive/folders/XXXX" --config config.yaml
 
-# inspect reports/identifications.csv, fix any aliases in config.yaml, re-run
+# 2a) Sorted LOCAL copy into organized/<artist>/ (safe, reversible)
+python -m commission_id.cli "https://drive.google.com/drive/folders/XXXX" \
+    --config config.yaml --apply --dest organized --include-review
 
-# 2) APPLY — copy files into organized/<artist>/ (add --move to move instead)
+# 2b) Reorganize IN Drive into per-artist folders (dry-run first, then --apply)
+python -m commission_id.cli "https://drive.google.com/drive/folders/XXXX" \
+    --config config.yaml --drive-apply                 # shows what WOULD move
+python -m commission_id.cli "https://drive.google.com/drive/folders/XXXX" \
+    --config config.yaml --drive-apply --apply         # actually moves, writes undo manifest
+
+# undo an in-Drive reorganization
+python -m commission_id.cli x --undo drive_apply_manifest.json
+```
+
+In-Drive moves only ever change a file's parent folder (no copies, no renames,
+nothing trashed), and every move is recorded so `--undo` can put it all back.
+
+## Use — a local folder
+
+Download your Drive folder yourself (Drive → right-click → Download) and unzip it,
+or point at any local folder:
+
+```bash
+python -m commission_id.cli "/path/to/Jaiy Deer" --config config.yaml          # dry run
 python -m commission_id.cli "/path/to/Jaiy Deer" --config config.yaml \
-    --apply --dest organized --include-review
-
-# filename + metadata only (no network):
-python -m commission_id.cli "/path/to/folder" --no-reverse
+    --apply --dest organized --include-review                                  # sorted copy
+python -m commission_id.cli "/path/to/folder" --no-reverse                     # filename + metadata only
 ```
 
 `--apply` always writes `organized/_apply_manifest.json` so any move can be undone.
+Adult-flagged files are reverse-searched by default; pass `--skip-adult` to skip them.
+
+## Drive setup (one time)
+
+The Drive API needs your own OAuth client (free):
+
+1. In the [Google Cloud Console](https://console.cloud.google.com/), create/select a
+   project and **enable the Google Drive API**.
+2. Create an **OAuth client ID** of type **Desktop app**, download it, and save it as
+   `credentials.json` next to the tool.
+3. First run opens a browser to authorize; the resulting token is cached in
+   `token.json`. Both files are git-ignored. A dry run only needs read-only access;
+   `--drive-apply` requests read/write.
 
 ## Review & label it yourself (recommended)
 
@@ -87,12 +121,8 @@ python -m commission_id.review "/path/to/Jaiy Deer" --config config.yaml
   artist; that's a deliberate design choice).
 
 Your labels are stored in `decisions.sqlite`, keyed so they survive re-runs and skip
-the rate-limited APIs entirely. Then sort using them:
-
-```bash
-python -m commission_id.cli "/path/to/Jaiy Deer" --config config.yaml \
-    --apply --dest organized --include-review
-```
+the rate-limited APIs entirely. Then sort using them (locally or in Drive) exactly as
+above.
 
 Useful review flags: `--scope all|review|unknown|both`, `--style-threshold 0.92`
 (stricter = fewer look-alikes), `--dup-threshold 6` (perceptual-hash distance),
@@ -102,8 +132,8 @@ Useful review flags: `--scope all|review|unknown|both`, `--style-threshold 0.92`
 
 - `commissioner_aliases` — every handle/nickname that means *you*, not an artist.
 - `artist_aliases` — collapse one artist's handles across sites into one folder name.
-- `reverse_search` — toggle Fluffle/SauceNAO, set the SauceNAO key, `include_adult`,
-  throttle, and the required Fluffle `User-Agent`.
+- `reverse_search` — toggle Fluffle/SauceNAO, set the SauceNAO key, `include_adult`
+  (default `true`), throttle, and the required Fluffle `User-Agent`.
 - `filename_stopwords` / `adult_hints` — tune token filtering and adult detection.
 
 ## Layout
@@ -119,15 +149,17 @@ commission_id/
   decisions.py   your stored artist labels (highest-priority signal)
   organize.py    dry-run report + apply (copy/move) + undo manifest
   cache.py       SQLite cache (reverse results + style fingerprints) by phash
+  drive.py       Google Drive: list/download + in-Drive reorganize (dry-run + undo)
   pipeline.py    orchestration
   review.py      interactive pop-up review + dup/style propagation (Tkinter)
-  cli.py         command-line entry point
+  cli.py         command-line entry point (local folder OR Drive link)
 tests/           unit tests for the deterministic logic
 ```
 
 ## Roadmap
 
-- **Phase 2:** Google Drive front end — paste a folder link, read via the Drive API,
-  and (optionally) reorganize in-place in Drive with dry-run + undo.
+- **Done (v0.3):** Google Drive front end — paste a folder link, read via the Drive
+  API, and either produce a sorted local copy or reorganize in-place in Drive with
+  dry-run + undo.
 - **Phase 3:** optional CLIP-style embedder backend for stronger style matching;
   e621 post-ID → artist-tag lookups; alias auto-merge; web-based review queue.

@@ -1,0 +1,73 @@
+# Copy this file to config.yaml and edit it.
+
+# Names that identify YOU (the commissioner / character), NOT an artist.
+# Matching is case-insensitive and fuzzy. Add every handle/nickname you use.
+commissioner_aliases:
+  - jaiy
+  - jaiydawoof
+  - jaiy deer
+  - jaiydeer
+
+# Optional: collapse alternate artist handles onto one canonical folder name,
+# so the same artist across Twitter / FA / e621 lands in a single folder.
+# Format ->  Canonical Name: [alias1, alias2, ...]
+artist_aliases: {}
+  # Examples (delete the {} above and uncomment to use):
+  # Kari Wanz: [kariwanz, kari, kari_wanz]
+  # CoffeeFish: [coffeefish899, coffee_fish]
+
+reverse_search:
+  enabled: true
+  use_fluffle: true            # furry-focused: e621, FA, Weasyl, Inkbunny, Twitter, Bluesky...
+  use_saucenao: false          # broader anime/Pixiv coverage; needs an API key + tighter limits
+  saucenao_api_key: ""
+  include_adult: false         # if false, files/folders flagged adult are skipped for reverse search
+  fluffle_user_agent: "gdrive-commission-id/0.1 (by robschuldt on GitHub)"
+  min_seconds_between_requests: 2.0   # be polite; the APIs are rate-limited
+
+# Tokens that are NOT artist names when they appear in a filename.
+filename_stopwords:
+  - img
+  - image
+  - untitled
+  - artwork
+  - final
+  - ref
+  - sheet
+  - reference
+  - comm
+  - commission
+  - commissioned
+  - ych
+  - adopt
+  - sketch
+  - sketches
+  - doodle
+  - clean
+  - questionable
+  - adult
+  - nsfw
+  - sfw
+  - wip
+  - flat
+  - flats
+  - color
+  - colour
+  - colored
+  - coloured
+  - lineart
+  - lines
+  - page
+  - copy
+  - edit
+  - screenshot
+  - photo
+  - pic
+
+# Words that hint a file/folder is adult (used to skip reverse search unless include_adult).
+adult_hints:
+  - adult
+  - nsfw
+  - questionable
+  - saucy
+  - explicit

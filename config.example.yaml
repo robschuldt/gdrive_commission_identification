@@ -21,7 +21,7 @@ reverse_search:
   use_fluffle: true            # furry-focused: e621, FA, Weasyl, Inkbunny, Twitter, Bluesky...
   use_saucenao: false          # broader anime/Pixiv coverage; needs an API key + tighter limits
   saucenao_api_key: ""
-  include_adult: false         # if false, files/folders flagged adult are skipped for reverse search
+  include_adult: true          # reverse-search adult-flagged files too (set false to skip them)
   fluffle_user_agent: "gdrive-commission-id/0.1 (by robschuldt on GitHub)"
   min_seconds_between_requests: 2.0   # be polite; the APIs are rate-limited
 

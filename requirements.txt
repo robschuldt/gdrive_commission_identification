@@ -3,5 +3,8 @@ imagehash>=4.3
 numpy>=1.24
 PyYAML>=6.0
 requests>=2.31
-# Optional — only needed if you enable SauceNAO:
+# Google Drive front end (commission_id.cli on a Drive link):
+google-api-python-client>=2.100
+google-auth-oauthlib>=1.2
+# Optional - only needed if you enable SauceNAO:
 # saucenao-api>=2.4.0

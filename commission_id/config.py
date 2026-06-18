@@ -27,7 +27,7 @@ class ReverseSearchConfig:
     use_fluffle: bool = True
     use_saucenao: bool = False
     saucenao_api_key: str = ""
-    include_adult: bool = False
+    include_adult: bool = True
     fluffle_user_agent: str = "gdrive-commission-id/0.1 (by user on GitHub)"
     min_seconds_between_requests: float = 2.0
 
@@ -64,7 +64,7 @@ class Config:
             use_fluffle=bool(rs.get("use_fluffle", True)),
             use_saucenao=bool(rs.get("use_saucenao", False)),
             saucenao_api_key=str(rs.get("saucenao_api_key", "")),
-            include_adult=bool(rs.get("include_adult", False)),
+            include_adult=bool(rs.get("include_adult", True)),
             fluffle_user_agent=str(rs.get("fluffle_user_agent",
                                           ReverseSearchConfig.fluffle_user_agent)),
             min_seconds_between_requests=float(rs.get("min_seconds_between_requests", 2.0)),

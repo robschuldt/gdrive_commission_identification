@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.sqlite
+*.db
+/cache/
+/organized/
+/reports/
+config.yaml
+credentials.json
+token.json
+.DS_Store
